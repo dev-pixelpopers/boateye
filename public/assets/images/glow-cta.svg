@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="3070" height="4140" viewBox="0 0 3070 4140" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Ellipse 3" filter="url(#filter0_f_0_50)">
+<path d="M1000 3140C1140.51 3140 1279.65 3112.32 1409.47 3058.55C1539.29 3004.78 1657.25 2925.96 1756.6 2826.6C1855.96 2727.25 1934.78 2609.29 1988.55 2479.47C2042.32 2349.65 2070 2210.51 2070 2070C2070 1929.49 2042.32 1790.35 1988.55 1660.53C1934.78 1530.71 1855.96 1412.75 1756.6 1313.4C1657.25 1214.04 1539.29 1135.22 1409.47 1081.45C1279.65 1027.68 1140.51 1000 1000 1000V1530.24C1070.88 1530.24 1141.07 1544.2 1206.56 1571.33C1272.04 1598.45 1331.55 1638.21 1381.67 1688.33C1431.79 1738.45 1471.55 1797.96 1498.67 1863.44C1525.8 1928.93 1539.76 1999.12 1539.76 2070C1539.76 2140.88 1525.8 2211.07 1498.67 2276.56C1471.55 2342.04 1431.79 2401.55 1381.67 2451.67C1331.55 2501.79 1272.04 2541.55 1206.56 2568.67C1141.07 2595.8 1070.88 2609.76 1000 2609.76V3140Z" fill="#ED1B26" fill-opacity="0.5"/>
+</g>
+<defs>
+<filter id="filter0_f_0_50" x="0" y="0" width="3070" height="4140" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="500" result="effect1_foregroundBlur_0_50"/>
+</filter>
+</defs>
+</svg>

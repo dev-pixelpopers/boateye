@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * Local font faces — every file in /public/assets/fonts
+ * ------------------------------------------------------------------------- */
+@font-face {
+  font-family: "Audiowide";
+  src: url("/assets/fonts/Audiowide-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/assets/fonts/Archivo-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Archivo Regular is used in the footer but only the Light cut ships locally;
+ * map 400 to the same file so the browser never synthesises a fallback. */
+@font-face {
+  font-family: "Archivo";
+  src: url("/assets/fonts/Archivo-Light.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  --ink: #0b0a0b;
+  --paper: #ffffff;
+  --mist: #f0f0f0;
+  --signal: #ed1b26;
+  --maroon: #3e0e11;
+  --slate: #4a4a4a;
+
+  --display-stack: "Audiowide", system-ui, sans-serif;
+  --body-stack: "Archivo", "Helvetica Neue", Arial, sans-serif;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-mist: var(--mist);
+  --color-signal: var(--signal);
+  --color-maroon: var(--maroon);
+  --color-slate: var(--slate);
+
+  --font-display: var(--display-stack);
+  --font-body: var(--body-stack);
+}
+
+html {
+  background: var(--ink);
+  color-scheme: dark;
+  overflow-x: clip;
+}
+
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--body-stack);
+  font-weight: 300;
+  overflow-x: clip;
+}
+
+/* ---------------------------------------------------------------------------
+ * Typography utilities
+ * ------------------------------------------------------------------------- */
+@utility font-audiowide {
+  font-family: var(--display-stack);
+  font-weight: 400;
+}
+
+@utility font-archivo {
+  font-family: var(--body-stack);
+}
+
+/* Michroma comes from next/font (layout.tsx) and is only used for "Menu". */
+@utility font-michroma {
+  font-family: var(--font-michroma), var(--display-stack);
+  font-weight: 400;
+}
+
+/* Fluid display sizes, tuned against the 1920px Figma frame. */
+@utility text-mega {
+  font-size: clamp(2.25rem, 11.45vw, 13.75rem);
+  /* 220px */
+  line-height: 0.91;
+  letter-spacing: -0.06em;
+}
+
+@utility text-giant {
+  font-size: clamp(2rem, 10.42vw, 12.5rem);
+  /* 200px */
+  line-height: 0.91;
+  letter-spacing: -0.04em;
+}
+
+@utility text-title {
+  font-size: clamp(1.75rem, 4.17vw, 5rem);
+  /* 80px */
+  line-height: 1.05;
+}
+
+@utility text-eyebrow {
+  font-size: clamp(1.5rem, 2.08vw, 2.5rem);
+  /* 40px */
+  line-height: 0.91;
+  letter-spacing: -0.04em;
+}
+
+/* ---------------------------------------------------------------------------
+ * Ambient red studio glows (the Figma ellipses are #ED1B26 @ 50%, blur 500)
+ * ------------------------------------------------------------------------- */
+@utility glow-signal {
+  background: radial-gradient(closest-side,
+      rgb(237 27 38 / 0.55),
+      rgb(237 27 38 / 0.2) 55%,
+      transparent);
+  filter: blur(40px);
+}
+
+/* Figma's red ellipses: #ED1B26 @ 50% with a 500px layer blur (at 1920). */
+@utility glow-ellipse {
+  background: rgb(237 27 38 / 0.5);
+  filter: blur(min(26vw, 500px));
+}
+
+/* Hero elements start hidden so GSAP can reveal them without a flash. */
+.hero-hidden {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-hidden {
+    visibility: visible;
+  }
+}
