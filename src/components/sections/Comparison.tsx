@@ -106,7 +106,7 @@ export function Comparison() {
               Other Brands
             </figcaption>
           </figure>
-          <figure className="cmp-right relative aspect-[598/646] overflow-hidden">
+          <figure className="cmp-right h-full relative aspect-[598/646] overflow-hidden">
             <Image
               src="/assets/images/comparison-boateye.webp"
               alt="The same boat in full color through BoatEye360"
