@@ -201,27 +201,16 @@ export function CameraModel({ state: stateRef }: { state: React.RefObject<Showca
   const meshes = useRef<(THREE.Mesh | null)[]>([]);
   const { viewport, camera, size } = useThree();
 
-  useFrame((frame) => {
+  useFrame(() => {
     const state = stateRef.current;
     const group = rig.current;
     if (!group) return;
 
     const vp = viewport.getCurrentViewport(camera, [0, 0, 0]);
     const fit = Math.min(vp.height * 0.62, vp.width * 0.55);
-    const enter = easeOut(state.enter);
-    const t = frame.clock.elapsedTime;
-
-    group.position.set(
-      (state.x * vp.width) / 2,
-      (state.y * vp.height) / 2 - (1 - enter) * vp.height * 0.35 + Math.sin(t * 0.9) * 0.02 * fit,
-      0,
-    );
-    group.scale.setScalar(fit * state.scale * (0.55 + 0.45 * enter));
-    group.rotation.set(
-      state.rotX + state.spinX,
-      state.rotY - (1 - enter) * 0.9,
-      state.rotZ + Math.sin(t * 0.6) * 0.012,
-    );
+    group.position.set((state.x * vp.width) / 2, (state.y * vp.height) / 2, 0);
+    group.scale.setScalar(fit * state.scale);
+    group.rotation.set(state.rotX + state.spinX, state.rotY, state.rotZ);
 
     // Explode: parts leave in waves, front optics first.
     parts.forEach((part, i) => {

@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useRef } from "react";
-import { gsap, SplitText, useGSAP, SCRUB } from "@/lib/gsap";
+import { gsap, gatherX, SplitText, useGSAP, SCRUB } from "@/lib/gsap";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { PillButton } from "@/components/ui/PillButton";
-import { createShowcaseState, POSES, type ShowcaseState } from "./state";
+import { createShowcaseState, INTRO, POSES, type ShowcaseState } from "./state";
 
 const CameraCanvas = dynamic(() => import("./CameraCanvas"), { ssr: false });
 
@@ -35,6 +35,9 @@ const CALLOUTS: Callout[] = [
   { key: "bracket", title: "Mount bracket", sub: "Adjustable tilt", dx: 60, dy: 110, hx: 80 },
 ];
 
+/** Full-stage layer: occupies the stage grid's single cell. */
+const LAYER = "col-start-1 row-start-1";
+
 export function Showcase() {
   const root = useRef<HTMLElement>(null);
   // Mutable bag shared with the render loop; only touched in effects,
@@ -57,19 +60,31 @@ export function Showcase() {
       const state = stateRef.current;
 
       const tech = SplitText.create(q(".sc-tech-title"), { type: "lines,chars", mask: "lines" });
-      const introCopy = SplitText.create(q(".sc-intro-copy"), { type: "lines", mask: "lines" });
       const featureTitles = q(".sc-feature").map((el) =>
         SplitText.create(el, { type: "lines,words", mask: "lines" }),
       );
 
+      const introTitle = SplitText.create(q(".sc-intro-title"), { type: "lines,chars", mask: "lines" });
+      const introCopy = SplitText.create(q(".sc-intro-copy"), { type: "lines", mask: "lines" });
+
       gsap.set(q(".sc-line"), { strokeDasharray: 1, strokeDashoffset: 1 });
 
-      // Pre-roll while the stage slides in from below (before it sticks).
-      gsap.to(state, {
-        enter: 1,
-        ease: "none",
-        scrollTrigger: { trigger: root.current, start: "top bottom", end: "top top", scrub: SCRUB },
-      });
+      // Entrance, scrubbed while the stage slides up into place, so the
+      // heading, copy and CTA have fully landed by the time it sticks.
+      gsap
+        .timeline({
+          defaults: { ease: "power3.out" },
+          scrollTrigger: { trigger: root.current, start: "top 85%", end: "top top", scrub: SCRUB },
+        })
+        .from(introTitle.chars, { yPercent: 110, x: gatherX(14), stagger: 0.02, duration: 0.6 }, 0)
+        .from(introCopy.lines, { yPercent: 110, stagger: 0.08, duration: 0.5 }, 0.45)
+        .fromTo(
+          q(".sc-intro-cta .pill-stroke"),
+          { strokeDasharray: 1, strokeDashoffset: 1 },
+          { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" },
+          0.6,
+        )
+        .from(q(".sc-intro-cta .pill-label"), { yPercent: 80, autoAlpha: 0, duration: 0.4 }, 0.8);
 
       const mm = gsap.matchMedia();
 
@@ -79,70 +94,45 @@ export function Showcase() {
           const { desktop } = ctx.conditions as { desktop: boolean };
           const side = desktop ? { x: -0.48, y: -0.12 } : { x: 0, y: -0.32 };
           const sideScale = desktop ? 0.74 : 0.8;
-          // Spotlight path in % of the stage, tuned to the left-aligned heading.
-          const sweep = desktop
-            ? { from: 16, to: 82, y: [22, 14, 46, 30], flood: [44, 32] }
-            : { from: 8, to: 88, y: [16, 12, 26, 18], flood: [45, 18] };
 
           const tl = gsap.timeline({
             defaults: { ease: "power2.inOut" },
             scrollTrigger: { trigger: root.current, start: "top top", end: "bottom bottom", scrub: SCRUB },
           });
 
-          // ── Phase 1 · intro: the camera's spotlight finds the heading ────
-          // The model sits on the right, lens tilted up, and pans like a
-          // searchlight across the heading while the lit mask tracks it.
-          const spot = q(".sc-spot");
-          const intro = desktop
-            ? { x: 0.42, y: -0.2, scale: 0.92 }
-            : { x: 0.12, y: -0.46, scale: 0.9 };
-          gsap.set(spot, { "--sx": sweep.from, "--sy": sweep.y[0] });
-          tl.addLabel("intro", 0)
-            .fromTo(q(".sc-glow"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 0)
-            .to(state, { ...intro, rotY: -1.05, rotX: -0.32, duration: 0.3, ease: "power2.out" }, 0)
-            .to(spot, { "--sr": desktop ? 17 : 22, duration: 0.3, ease: "power2.out" }, 0)
-            .to(spot, { "--sx": sweep.to, duration: 0.8, ease: "sine.inOut" }, 0.3)
-            .to(spot, { keyframes: { "--sy": sweep.y }, duration: 0.8, ease: "none" }, 0.3)
-            .to(state, { rotY: -0.1, duration: 0.8, ease: "sine.inOut" }, 0.3)
-            // …then settles and floods open: night becomes day.
-            .to(spot, { "--sx": sweep.flood[0], "--sy": sweep.flood[1], duration: 0.3, ease: "power2.inOut" }, 1.1)
-            .to(state, { ...POSES.intro, duration: 0.4, ease: "power2.inOut" }, 1.1)
-            .to(spot, { "--sr": 160, duration: 0.45, ease: "power2.in" }, 1.25)
-            .to(q(".sc-beam"), { autoAlpha: 0, duration: 0.35 }, 1.2)
-            .fromTo(
-              q(".sc-intro-lit .sc-intro-title"),
-              { scale: 0.98, transformOrigin: "0% 50%" },
-              { scale: 1, duration: 0.45, ease: "power2.out" },
-              1.25,
-            )
-            .from(introCopy.lines, { yPercent: 110, stagger: 0.06, duration: 0.4, ease: "power3.out" }, 1.4)
-            .fromTo(
-              q(".sc-intro-cta .pill-stroke"),
-              { strokeDasharray: 1, strokeDashoffset: 1 },
-              { strokeDashoffset: 0, duration: 0.5 },
-              1.45,
-            )
-            .from(q(".sc-intro-cta .pill-label"), { yPercent: 80, autoAlpha: 0, duration: 0.35 }, 1.6)
+          // ── Phase 1 · intro: heading, copy and model already in place;
+          // hold briefly before the split ────────────────────────────────
+          const intro = desktop ? INTRO.desktop : INTRO.mobile;
+          // Mirror of the intro angle: facing right, toward the feature text.
+          const lookRight = { rotY: -intro.rotY, rotX: intro.rotX };
+          gsap.set(state, intro);
 
-            // ── Phase 2 · heading goes, the camera flips across to the left ─
-            .addLabel("split", 1.9)
-            .to(spot, { "--sr": 0, duration: 0.5, ease: "power2.in" }, "split")
-            .to(q(".sc-intro-title"), { x: -40, filter: "blur(12px)", autoAlpha: 0, duration: 0.5 }, "split+=0.05")
-            .to(q(".sc-intro-copy"), { x: -40, filter: "blur(8px)", autoAlpha: 0, duration: 0.4 }, "split")
-            .to(q(".sc-intro-cta"), { x: -40, autoAlpha: 0, duration: 0.4 }, "split")
-            .to(state, { ...side, scale: sideScale, rotY: -0.3, rotX: 0.1, duration: 1 }, "split")
-            // One full flip around X while it travels left.
-            .fromTo(state, { spinX: 0 }, { spinX: Math.PI * 2, duration: 1, ease: "power2.inOut" }, "split");
+          // ── Phase 2 · heading goes, the camera flips across to the left ─
+          // Heading lines peel away upward, last line first, each a beat
+          // apart; copy and CTA drop out beneath them.
+          const out = { immediateRender: false, ease: "power2.in" };
+          tl.addLabel("split", 0.4)
+            .fromTo(
+              introTitle.lines,
+              { yPercent: 0, filter: "blur(0px)" },
+              { ...out, yPercent: -110, filter: "blur(6px)", stagger: { each: 0.08, from: "end" }, duration: 0.45 },
+              "split+=0.05",
+            )
+            .fromTo(introCopy.lines, { yPercent: 0 }, { ...out, yPercent: 110, stagger: 0.04, duration: 0.35 }, "split")
+            .to(q(".sc-intro-cta"), { y: 30, autoAlpha: 0, duration: 0.35, ease: "power2.in" }, "split")
+            // The model slides left, turning on the spot from facing left to
+            // facing right, ready for feature 1.
+            .to(state, { ...side, ...lookRight, scale: sideScale, duration: 0.85 }, "split");
 
           // ── Phase 3 · features take over the heading's place, one at a
           // time; the model scales up and turns to the matching part ───────
           const poses = [
-            { ...POSES.front, scale: sideScale * 1.3 },
+            { ...lookRight, scale: sideScale * 1.3 },
             { ...POSES.back, scale: sideScale * 1.25 },
             { ...POSES.body, scale: sideScale * 1.1, x: desktop ? -0.42 : 0 },
           ];
           const features = q(".sc-feature");
-          const FEATURE_START = 2.9;
+          const FEATURE_START = 1.4;
           const FEATURE_STEP = 1.2;
 
           features.forEach((feature, i) => {
@@ -162,7 +152,7 @@ export function Showcase() {
           });
 
           // ── Section 4 · recentre and explode ──────────────────────────────
-          tl.addLabel("tech", 6.6)
+          tl.addLabel("tech", 5.1)
             .to(featureTitles[2].words, { yPercent: -115, stagger: 0.03, duration: 0.4, ease: "power2.in" }, "tech")
             .to(q(".sc-glow"), { x: () => -window.innerWidth * 0.1, duration: 1 }, "tech")
             .to(state, { x: 0, y: desktop ? -0.2 : -0.1, scale: desktop ? 0.8 : 0.85, ...POSES.exploded, duration: 1.1 }, "tech")
@@ -185,7 +175,7 @@ export function Showcase() {
             .to(q(".sc-progress .sc-line"), { strokeDashoffset: 0, duration: 1.8, ease: "none" }, "tech+=1");
 
           q(".sc-callout").forEach((el, i) => {
-            const at = 7.9 + i * 0.16;
+            const at = 6.4 + i * 0.16;
             tl.to(el.querySelector(".sc-line"), { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, at)
               .fromTo(el.querySelector(".sc-callout-dot"), { scale: 0 }, { scale: 1, duration: 0.2 }, at)
               .fromTo(
@@ -206,78 +196,24 @@ export function Showcase() {
   );
 
   return (
-    <section ref={root} id="clearer-view" className="relative h-[900vh]" aria-label="The C-1080 camera">
-      <div className="sticky top-0 h-svh overflow-hidden">
+    <section ref={root} id="clearer-view" className="relative h-[780vh]" aria-label="The C-1080 camera">
+      {/* One-cell grid: every full-stage layer shares the cell and stacks in
+          DOM order, so only the offset/anchored pieces need `absolute`. */}
+      <div className="sticky top-0 grid h-svh grid-cols-[100%] grid-rows-[100%] overflow-hidden">
         {/* Figma ellipse 109:82 — red glow rising from the lower right */}
         <div
           aria-hidden
-          className="sc-glow glow-ellipse pointer-events-none absolute aspect-[1/2] w-[55.73vw] rounded-l-full"
+          className="sc-glow glow-ellipse pointer-events-none absolute -z-10 aspect-[1/2] w-[55.73vw] rounded-l-full"
           style={{ left: "calc(87.3% - 55.73vw)", top: "calc(135% - 55.73vw)" }}
         />
 
-        {/*
-          Phase 1 heading sits behind the model and starts "in the dark": a
-          faint outline copy, plus a lit copy revealed only inside the camera's
-          spotlight (a radial mask driven by --sx / --sy / --sr). The spot
-          sweeps the words, then floods open — night turned to day.
-        */}
-        <div
-          className="sc-spot pointer-events-none absolute inset-0"
-          style={{ "--sx": 16, "--sy": 22, "--sr": 0 } as React.CSSProperties}
-        >
-          <div
-            aria-hidden
-            className="sc-beam absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(circle calc(var(--sr) * 1.5vmax) at calc(var(--sx) * 1%) calc(var(--sy) * 1%), rgb(255 236 230 / .14), rgb(237 27 38 / .08) 45%, transparent 72%)",
-            }}
-          />
-          <div className="sc-intro-dark absolute inset-0 flex flex-col items-start px-4 pt-[14vh] md:pl-[14.9vw] md:pt-[10vh]">
-            <h2 className="sc-intro-title text-giant text-left font-audiowide uppercase text-transparent [-webkit-text-stroke:1px_rgb(255_255_255/0.09)]">
-              <span className="block whitespace-nowrap">A Clearer</span>
-              <span className="block whitespace-nowrap">View After</span>
-              <span className="block whitespace-nowrap">Dark.</span>
-            </h2>
-          </div>
-          <div
-            aria-hidden
-            className="sc-intro-lit absolute inset-0 flex flex-col items-start px-4 pt-[14vh] md:pl-[14.9vw] md:pt-[10vh]"
-            style={{
-              maskImage:
-                "radial-gradient(circle calc(var(--sr) * 1vmax) at calc(var(--sx) * 1%) calc(var(--sy) * 1%), #000 45%, transparent 100%)",
-              WebkitMaskImage:
-                "radial-gradient(circle calc(var(--sr) * 1vmax) at calc(var(--sx) * 1%) calc(var(--sy) * 1%), #000 45%, transparent 100%)",
-            }}
-          >
-            <p className="sc-intro-title text-giant text-left font-audiowide uppercase text-mist [text-shadow:0_0_40px_rgb(255_255_255/0.25)]">
-              <span className="block whitespace-nowrap">A Clearer</span>
-              <span className="block whitespace-nowrap">View After</span>
-              <span className="block whitespace-nowrap">Dark.</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Section 4 heading */}
-        <div className="pointer-events-none absolute inset-x-0 top-[6vh] flex justify-center px-4">
-          <h2 className="sc-tech sc-tech-title text-giant origin-top text-center font-audiowide uppercase text-white">
-            Technology
-            <br />
-            Behind the C-1080
-          </h2>
-        </div>
-
-        <div className="pointer-events-none absolute inset-0">
-          <CameraCanvas state={stateRef} track={root} />
-        </div>
-
-        {/* Intro copy + CTA: above the canvas so the button is clickable */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-start px-4 pt-[14vh] md:pl-[14.9vw] md:pt-[10vh]">
-          <p aria-hidden className="invisible text-giant font-audiowide uppercase">
+        {/* Phase 1 heading, copy and CTA — behind the model */}
+        <div className={`${LAYER} pointer-events-none flex flex-col items-start px-4 pt-[14vh] md:px-[10vw] md:pt-[10vh]`}>
+          <h2 className="sc-intro-title text-giant text-left font-audiowide uppercase text-mist">
             <span className="block whitespace-nowrap">A Clearer</span>
             <span className="block whitespace-nowrap">View After</span>
             <span className="block whitespace-nowrap">Dark.</span>
-          </p>
+          </h2>
           <p className="sc-intro-copy mt-[clamp(1.5rem,4vh,3.5rem)] max-w-[22rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-white">
             Full-color marine night vision, engineered for real-world boating. See more detail in
             low light with a camera built for demanding marine environments.
@@ -289,12 +225,37 @@ export function Showcase() {
           </div>
         </div>
 
+        {/* Section 4 heading */}
+        <div className={`${LAYER} pointer-events-none flex items-start justify-center px-4 pt-[6vh]`}>
+          <h2 className="sc-tech sc-tech-title text-giant origin-top text-center font-audiowide uppercase text-white">
+            Technology
+            <br />
+            Behind the C-1080
+          </h2>
+        </div>
+
+        {/* Phase 3 features — one at a time where the heading was, right-aligned */}
+        <div className={`${LAYER} pointer-events-none grid content-start justify-items-end px-4 pt-[14vh] md:px-[10vw] md:pt-[10vh]`}>
+          {FEATURES.map((title) => (
+            <h3
+              key={title}
+              className="sc-feature text-[clamp(2rem,6.2vw,7.5rem)] leading-[0.95] tracking-[-0.03em] invisible col-start-1 row-start-1 max-w-full text-right font-audiowide uppercase text-mist [perspective:900px]"
+            >
+              {title}
+            </h3>
+          ))}
+        </div>
+
+        <div className={`${LAYER} pointer-events-none z-10`}>
+          <CameraCanvas state={stateRef} track={root} />
+        </div>
+
         {/* Section 4 callouts pinned to exploded parts */}
         {CALLOUTS.map((c) => (
           <div
             key={c.key}
             ref={anchor(c.key)}
-            className="sc-callout pointer-events-none absolute left-0 top-0 hidden will-change-transform md:block"
+            className="sc-callout pointer-events-none absolute left-0 top-0 z-20 hidden will-change-transform md:block"
           >
             <span className="sc-callout-dot absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal shadow-[0_0_12px_#ed1b26]" />
             <svg className="absolute left-0 top-0 overflow-visible" width="1" height="1">
@@ -319,20 +280,8 @@ export function Showcase() {
           </div>
         ))}
 
-        {/* Phase 3 features — one at a time where the heading was, right-aligned */}
-        <div className="pointer-events-none absolute inset-0 grid content-start justify-items-end px-4 pt-[14vh] md:pr-[5.73vw] md:pt-[10vh]">
-          {FEATURES.map((title) => (
-            <h3
-              key={title}
-              className="sc-feature invisible col-start-1 row-start-1 max-w-full text-right font-audiowide text-[clamp(2rem,6.2vw,7.5rem)] uppercase leading-[0.95] tracking-[-0.03em] text-mist [perspective:900px] md:max-w-[60vw]"
-            >
-              {title}
-            </h3>
-          ))}
-        </div>
-
         {/* Scroll-progress HUD line for the exploded sequence */}
-        <svg className="sc-progress pointer-events-none absolute inset-x-[5.73vw] bottom-[4vh] h-px w-[88.5vw] overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 1">
+        <svg className={`sc-progress ${LAYER} pointer-events-none z-20 mb-[4vh] ml-[5.73vw] h-px w-[88.5vw] self-end justify-self-start overflow-visible`} preserveAspectRatio="none" viewBox="0 0 100 1">
           <line x1="0" y1="0.5" x2="100" y2="0.5" stroke="rgb(255 255 255 / .12)" vectorEffect="non-scaling-stroke" />
           <line className="sc-line" x1="0" y1="0.5" x2="100" y2="0.5" stroke="#ed1b26" pathLength={1} />
         </svg>

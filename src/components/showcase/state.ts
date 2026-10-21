@@ -3,8 +3,6 @@
  * render loop. GSAP tweens these numbers; `CameraModel` reads them every frame.
  */
 export type ShowcaseState = {
-  /** 0 → 1 while the section scrolls into view (before the sticky stage locks). */
-  enter: number;
   /** Horizontal / vertical offset as a fraction of half the viewport. */
   x: number;
   y: number;
@@ -22,12 +20,7 @@ export type ShowcaseState = {
 
 export function createShowcaseState(): ShowcaseState {
   return {
-    enter: 0,
-    x: 0,
-    y: 0,
-    scale: 0.8,
-    rotX: 0.12,
-    rotY: -1.6,
+    ...INTRO.desktop,
     rotZ: 0,
     spinX: 0,
     explode: 0,
@@ -35,11 +28,14 @@ export function createShowcaseState(): ShowcaseState {
   };
 }
 
+/** Opening pose: right of centre, overlapping the heading, lens level. */
+export const INTRO = {
+  desktop: { x: 0.6, y: -0.25, scale: 1, rotY: -0.7, rotX: 0 },
+  mobile: { x: 0.12, y: -0.46, scale: 0.9, rotY: -0.5, rotX: 0 },
+} as const;
+
 /** Key poses used by the scroll choreography (radians). */
 export const POSES = {
-  // Lens turned toward the heading and tilted up, as in the Figma render.
-  intro: { rotY: -0.5, rotX: -0.34 },
-  front: { rotY: 0, rotX: 0.04 },
   back: { rotY: Math.PI + 0.35, rotX: 0.1 },
   body: { rotY: Math.PI * 2 - 1.05, rotX: 0.32 },
   exploded: { rotY: Math.PI * 2 - 0.85, rotX: 0.14 },
