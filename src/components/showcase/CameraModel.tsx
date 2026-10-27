@@ -178,18 +178,21 @@ function useCameraParts(): Part[] {
   return parts;
 }
 
-/** Callout anchors: which part a DOM label is pinned to. */
+/** Callout anchors: which part a DOM label is pinned to (keys may share a part). */
 export const ANCHOR_PARTS: Record<string, string> = {
   glass: "glass",
-  lens: "lens-barrel",
-  aperture: "aperture",
-  bezel: "bezel",
+  seal: "bezel",
+  screws: "screw",
   housing: "body",
+  size: "body",
   bracket: "bracket",
-  rear: "hdmi-socket",
+  // The larger rear gland carries the analog video cable.
+  analog: "gland-6",
+  hdmi: "hdmi-socket",
 };
 
 const tmp = new THREE.Vector3();
+const ORIGIN = new THREE.Vector3();
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export function CameraModel({ state: stateRef }: { state: React.RefObject<ShowcaseState> }) {
@@ -197,7 +200,16 @@ export function CameraModel({ state: stateRef }: { state: React.RefObject<Showca
   const materials = useMemo(() => createMaterials(), []);
   useEffect(() => () => Object.values(materials).forEach((m) => m.dispose()), [materials]);
 
+  // The four M6 bolts through the bracket arms sit on the tilt axis; their
+  // average is the hinge point the body pitches around.
+  const pivot = useMemo(() => {
+    const screws = parts.filter((p) => p.name === "screw");
+    const sum = screws.reduce((v, p) => v.add(p.home), new THREE.Vector3());
+    return screws.length ? sum.divideScalar(screws.length) : sum;
+  }, [parts]);
+
   const rig = useRef<THREE.Group>(null);
+  const hinge = useRef<THREE.Group>(null);
   const meshes = useRef<(THREE.Mesh | null)[]>([]);
   const { viewport, camera, size } = useThree();
 
@@ -211,6 +223,8 @@ export function CameraModel({ state: stateRef }: { state: React.RefObject<Showca
     group.position.set((state.x * vp.width) / 2, (state.y * vp.height) / 2, 0);
     group.scale.setScalar(fit * state.scale);
     group.rotation.set(state.rotX + state.spinX, state.rotY, state.rotZ);
+    // +Z is the lens, so a negative X turn lifts it.
+    if (hinge.current) hinge.current.rotation.x = -state.tilt;
 
     // Explode: parts leave in waves, front optics first.
     parts.forEach((part, i) => {
@@ -218,10 +232,12 @@ export function CameraModel({ state: stateRef }: { state: React.RefObject<Showca
       if (!mesh) return;
       const start = (part.order / (MAX_ORDER + 1)) * 0.45;
       const local = easeOut(THREE.MathUtils.clamp((state.explode - start) / (1 - start), 0, 1));
+      // Body parts live in the hinge group, so they're placed relative to it.
+      const origin = part.name === "bracket" ? ORIGIN : pivot;
       mesh.position.set(
-        part.home.x + part.explode[0] * local,
-        part.home.y + part.explode[1] * local,
-        part.home.z + part.explode[2] * local,
+        part.home.x - origin.x + part.explode[0] * local,
+        part.home.y - origin.y + part.explode[1] * local,
+        part.home.z - origin.z + part.explode[2] * local,
       );
       mesh.rotation.z = (part.spin ?? 0) * local;
     });
@@ -241,20 +257,25 @@ export function CameraModel({ state: stateRef }: { state: React.RefObject<Showca
     });
   });
 
+  const renderPart = (part: Part, i: number) => (
+    <mesh
+      key={`${part.name}-${i}`}
+      ref={(m) => {
+        meshes.current[i] = m;
+      }}
+      geometry={part.geometry}
+      material={materials[part.material]}
+      renderOrder={part.material === "glass" ? 2 : 0}
+    />
+  );
+
+  // The bracket stays fixed to the rig; everything else pitches on the hinge.
   return (
     <group ref={rig}>
-      {parts.map((part, i) => (
-        <mesh
-          key={`${part.name}-${i}`}
-          ref={(m) => {
-            meshes.current[i] = m;
-          }}
-          geometry={part.geometry}
-          material={materials[part.material]}
-          position={part.home}
-          renderOrder={part.material === "glass" ? 2 : 0}
-        />
-      ))}
+      {parts.map((part, i) => (part.name === "bracket" ? renderPart(part, i) : null))}
+      <group ref={hinge} position={pivot}>
+        {parts.map((part, i) => (part.name === "bracket" ? null : renderPart(part, i)))}
+      </group>
     </group>
   );
 }

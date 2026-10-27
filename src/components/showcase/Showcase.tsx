@@ -5,15 +5,37 @@ import { useCallback, useRef } from "react";
 import { gsap, gatherX, SplitText, useGSAP, SCRUB } from "@/lib/gsap";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { PillButton } from "@/components/ui/PillButton";
-import { createShowcaseState, INTRO, POSES, type ShowcaseState } from "./state";
+import { createShowcaseState, INTRO, POSES, TILT_UP, type ShowcaseState } from "./state";
 
 const CameraCanvas = dynamic(() => import("./CameraCanvas"), { ssr: false });
 
-// Each feature turns the model to the part it describes: front, back, body.
+// One at a time while the model turns past front, side, back, side, front;
+// the matching poses live in the timeline below.
 const FEATURES = [
-  "Full-color low-light imaging",
-  "HDMI and analog video outputs",
-  "316L marine-grade stainless steel housing",
+  {
+    title: "World's Smallest",
+    copy: "The world's smallest marine night vision camera. Compact enough to mount on a hardtop, T-top, arch or rail without crowding your view.",
+  },
+  {
+    title: "Built Tougher",
+    copy: "The world's toughest marine night vision camera. A sealed, marine-grade stainless housing made to shrug off salt, spray, sun and constant pounding.",
+  },
+  {
+    title: "Analog + HDMI",
+    copy: "The only marine night vision camera with both analog and digital HDMI outputs, so it works with the screens you have today and the ones you add later.",
+  },
+  {
+    title: "Fits Your Display",
+    copy: "Broad compatibility with marine displays and monitors means it plugs into the helm you already have, with no new electronics required.",
+  },
+  {
+    title: "Priced for Boaters",
+    copy: "Full-color night vision at a price that makes sense for everyday boat owners, not just commercial fleets.",
+  },
+  {
+    title: "Built in the USA",
+    copy: "Proudly built in the USA for boaters who want gear they can count on, season after season.",
+  },
 ] as const;
 
 type Callout = {
@@ -27,16 +49,49 @@ type Callout = {
 };
 
 const CALLOUTS: Callout[] = [
-  { key: "glass", title: "Front window", sub: "Optical glass", dx: -40, dy: -110, hx: -70 },
-  { key: "lens", title: "Lens assembly", sub: "Low-light optics", dx: -50, dy: 120, hx: -70 },
-  { key: "aperture", title: "Iris badge", sub: "Anodized finish", dx: 20, dy: -170, hx: 60 },
-  { key: "bezel", title: "Front bezel", sub: "Sealed ring", dx: 30, dy: 150, hx: 60 },
-  { key: "housing", title: "316L housing", sub: "Marine-grade stainless", dx: 60, dy: -140, hx: 80 },
-  { key: "bracket", title: "Mount bracket", sub: "Adjustable tilt", dx: 60, dy: 110, hx: 80 },
+  { key: "glass", title: "Scratch-proof glass", sub: "Keeps the view clear", dx: -20, dy: -120, hx: -40 },
+  { key: "seal", title: "IP69 waterproof", sub: "Sealed against spray & washdown", dx: -40, dy: 130, hx: -60 },
+  { key: "screws", title: "Titanium screws", sub: "Won't rust or seize", dx: 10, dy: -190, hx: 50 },
+  { key: "housing", title: "316L stainless housing", sub: "Marine-grade steel", dx: 20, dy: -190, hx: -60 },
+  // Overall size as measured from the 3D model (incl. bracket and bolts).
+  { key: "size", title: "Compact size", sub: "136 × 110 × 99 mm", dx: -10, dy: 200, hx: -60 },
+  { key: "bracket", title: "Flip-mount bracket", sub: "Upright or upside down", dx: 20, dy: 130, hx: 30 },
+  { key: "analog", title: "Analog video output", sub: "For classic displays", dx: 100, dy: -40, hx: 40 },
+  { key: "hdmi", title: "Digital HDMI output", sub: "For modern MFDs", dx: 90, dy: 40, hx: 40 },
 ];
 
 /** Full-stage layer: occupies the stage grid's single cell. */
 const LAYER = "col-start-1 row-start-1";
+
+/**
+ * Side-on pictogram of the camera on its bracket and mounting surface. The
+ * `flip` copy turns over on scroll to show the same unit hung upside down.
+ */
+function MountFigure({ label, flip = false }: { label: string; flip?: boolean }) {
+  return (
+    <figure className="flex flex-col items-center gap-1">
+      <svg viewBox="0 0 120 96" className="h-[clamp(3.5rem,5vw,5rem)] overflow-visible" fill="none" aria-hidden>
+        <g className={flip ? "sc-mount-flip" : undefined}>
+          {/* Mounting surface: deck, or the underside of a hardtop */}
+          <path d="M8 88h104" className="stroke-white/50" strokeWidth="1.5" />
+          {Array.from({ length: 9 }, (_, i) => (
+            <path key={i} d={`M${14 + i * 11} 88l-5 6`} className="stroke-white/25" />
+          ))}
+          {/* Bracket base, arm and hinge bolt */}
+          <path d="M38 88v-7h44v7M45 81l11-31h10l11 31" className="stroke-white" strokeWidth="1.5" strokeLinejoin="round" />
+          {/* Housing with the lens face and its view */}
+          <rect x="20" y="34" width="72" height="30" rx="6" className="fill-white/10 stroke-white" strokeWidth="1.5" />
+          <rect x="92" y="36" width="7" height="26" rx="2" className="fill-signal" />
+          <circle cx="61" cy="50" r="3" className="fill-ink stroke-white" />
+          <path d="M101 49l15-8M101 49l15 8" className="stroke-white/40" strokeDasharray="2 3" />
+        </g>
+      </svg>
+      <figcaption className="font-archivo text-[clamp(0.65rem,0.7vw,0.8rem)] uppercase tracking-[0.18em] text-white/80">
+        {label}
+      </figcaption>
+    </figure>
+  );
+}
 
 export function Showcase() {
   const root = useRef<HTMLElement>(null);
@@ -60,31 +115,15 @@ export function Showcase() {
       const state = stateRef.current;
 
       const tech = SplitText.create(q(".sc-tech-title"), { type: "lines,chars", mask: "lines" });
-      const featureTitles = q(".sc-feature").map((el) =>
+      const featureTitles = q(".sc-feature-title").map((el) =>
         SplitText.create(el, { type: "lines,words", mask: "lines" }),
       );
+      const featureCopies = q(".sc-feature-copy").map((el) => SplitText.create(el, { type: "lines", mask: "lines" }));
 
       const introTitle = SplitText.create(q(".sc-intro-title"), { type: "lines,chars", mask: "lines" });
       const introCopy = SplitText.create(q(".sc-intro-copy"), { type: "lines", mask: "lines" });
 
       gsap.set(q(".sc-line"), { strokeDasharray: 1, strokeDashoffset: 1 });
-
-      // Entrance, scrubbed while the stage slides up into place, so the
-      // heading, copy and CTA have fully landed by the time it sticks.
-      gsap
-        .timeline({
-          defaults: { ease: "power3.out" },
-          scrollTrigger: { trigger: root.current, start: "top 85%", end: "top top", scrub: SCRUB },
-        })
-        .from(introTitle.chars, { yPercent: 110, x: gatherX(14), stagger: 0.02, duration: 0.6 }, 0)
-        .from(introCopy.lines, { yPercent: 110, stagger: 0.08, duration: 0.5 }, 0.45)
-        .fromTo(
-          q(".sc-intro-cta .pill-stroke"),
-          { strokeDasharray: 1, strokeDashoffset: 1 },
-          { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" },
-          0.6,
-        )
-        .from(q(".sc-intro-cta .pill-label"), { yPercent: 80, autoAlpha: 0, duration: 0.4 }, 0.8);
 
       const mm = gsap.matchMedia();
 
@@ -100,18 +139,34 @@ export function Showcase() {
             scrollTrigger: { trigger: root.current, start: "top top", end: "bottom bottom", scrub: SCRUB },
           });
 
-          // ── Phase 1 · intro: heading, copy and model already in place;
-          // hold briefly before the split ────────────────────────────────
+          // ── Phase 1 · intro: the camera arrives alone, its body looks up
+          // on the bracket, then the heading, copy and CTA come in around it
           const intro = desktop ? INTRO.desktop : INTRO.mobile;
           // Mirror of the intro angle: facing right, toward the feature text.
           const lookRight = { rotY: -intro.rotY, rotX: intro.rotX };
           gsap.set(state, intro);
+          // The tilt holds until the explode; the bracket never moves.
+          tl.fromTo(state, { tilt: 0 }, { tilt: TILT_UP, duration: 0.5, immediateRender: false }, 0.1);
+
+          const reveal = { ease: "power3.out" };
+          tl.addLabel("reveal", 0.7)
+            .from(introTitle.chars, { ...reveal, yPercent: 110, x: gatherX(14), stagger: 0.02, duration: 0.6 }, "reveal")
+            .from(introCopy.lines, { ...reveal, yPercent: 110, stagger: 0.08, duration: 0.5 }, "reveal+=0.45")
+            .fromTo(
+              q(".sc-intro-cta .pill-stroke"),
+              { strokeDasharray: 1, strokeDashoffset: 1 },
+              { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" },
+              "reveal+=0.6",
+            )
+            .from(q(".sc-intro-cta .pill-label"), { ...reveal, yPercent: 80, autoAlpha: 0, duration: 0.4 }, "reveal+=0.8");
 
           // ── Phase 2 · heading goes, the camera flips across to the left ─
           // Heading lines peel away upward, last line first, each a beat
-          // apart; copy and CTA drop out beneath them.
+          // apart; copy and CTA drop out beneath them. Later phases are timed
+          // from here.
+          const SPLIT = 2.4;
           const out = { immediateRender: false, ease: "power2.in" };
-          tl.addLabel("split", 0.4)
+          tl.addLabel("split", SPLIT)
             .fromTo(
               introTitle.lines,
               { yPercent: 0, filter: "blur(0px)" },
@@ -125,15 +180,26 @@ export function Showcase() {
             .to(state, { ...side, ...lookRight, scale: sideScale, duration: 0.85 }, "split");
 
           // ── Phase 3 · features take over the heading's place, one at a
-          // time; the model scales up and turns to the matching part ───────
+          // time, heading over description; the model keeps turning one way
+          // and shows the part each feature is about ─────────────────────────
           const poses = [
-            { ...lookRight, scale: sideScale * 1.3 },
-            { ...POSES.back, scale: sideScale * 1.25 },
-            { ...POSES.body, scale: sideScale * 1.1, x: desktop ? -0.42 : 0 },
+            // Smallest: front three-quarter, held small.
+            { ...lookRight, scale: sideScale * 0.95 },
+            // Toughest: side profile along the stainless housing.
+            { rotY: 1.45, rotX: 0.26, scale: sideScale * 0.95, x: desktop ? -0.36 : 0 },
+            // Dual outputs: straight at the rear HDMI port and cable glands.
+            { ...POSES.back, scale: sideScale * 1.3, x: side.x },
+            // Compatibility: rear three-quarter, ports and cable run.
+            { rotY: Math.PI + 0.95, rotX: 0.22, scale: sideScale, x: desktop ? -0.38 : 0 },
+            // Affordable: the full product from above.
+            { ...POSES.body, scale: sideScale * 0.95, x: desktop ? -0.36 : 0 },
+            // Built in the USA: nearly head-on and level.
+            { rotY: Math.PI * 2 - 0.5, rotX: 0.08, scale: sideScale, x: desktop ? -0.36 : 0 },
           ];
           const features = q(".sc-feature");
-          const FEATURE_START = 1.4;
+          const FEATURE_START = SPLIT + 1;
           const FEATURE_STEP = 1.2;
+          const leave = { yPercent: -115, stagger: 0.03, duration: 0.35, ease: "power2.in" };
 
           features.forEach((feature, i) => {
             const at = FEATURE_START + i * FEATURE_STEP;
@@ -143,19 +209,26 @@ export function Showcase() {
                 { yPercent: 115, rotateX: -70, transformOrigin: "100% 100%", stagger: 0.05, duration: 0.5, ease: "power3.out" },
                 at + 0.05,
               )
+              .from(featureCopies[i].lines, { yPercent: 110, stagger: 0.06, duration: 0.45, ease: "power3.out" }, at + 0.3)
               .to(state, { ...poses[i], duration: 0.9 }, at - 0.15);
 
             if (i > 0) {
-              tl.to(featureTitles[i - 1].words, { yPercent: -115, stagger: 0.03, duration: 0.35, ease: "power2.in" }, at - 0.35)
+              tl.to(featureTitles[i - 1].words, leave, at - 0.35)
+                .to(featureCopies[i - 1].lines, { ...leave, stagger: 0.02 }, at - 0.35)
                 .to(features[i - 1], { autoAlpha: 0, duration: 0.01 }, at);
             }
           });
 
           // ── Section 4 · recentre and explode ──────────────────────────────
-          tl.addLabel("tech", 5.1)
-            .to(featureTitles[2].words, { yPercent: -115, stagger: 0.03, duration: 0.4, ease: "power2.in" }, "tech")
+          const last = features.length - 1;
+          const TECH = FEATURE_START + last * FEATURE_STEP + 1.3;
+          tl.addLabel("tech", TECH)
+            .to(featureTitles[last].words, { ...leave, duration: 0.4 }, "tech")
+            .to(featureCopies[last].lines, { ...leave, stagger: 0.02 }, "tech")
             .to(q(".sc-glow"), { x: () => -window.innerWidth * 0.1, duration: 1 }, "tech")
             .to(state, { x: 0, y: desktop ? -0.2 : -0.1, scale: desktop ? 0.8 : 0.85, ...POSES.exploded, duration: 1.1 }, "tech")
+            // Level the body back out before the parts separate.
+            .to(state, { tilt: 0, duration: 0.8 }, "tech")
             .fromTo(q(".sc-tech"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, "tech+=0.2")
             .fromTo(
               tech.chars,
@@ -175,7 +248,7 @@ export function Showcase() {
             .to(q(".sc-progress .sc-line"), { strokeDashoffset: 0, duration: 1.8, ease: "none" }, "tech+=1");
 
           q(".sc-callout").forEach((el, i) => {
-            const at = 6.4 + i * 0.16;
+            const at = TECH + 1.3 + i * 0.16;
             tl.to(el.querySelector(".sc-line"), { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, at)
               .fromTo(el.querySelector(".sc-callout-dot"), { scale: 0 }, { scale: 1, duration: 0.2 }, at)
               .fromTo(
@@ -185,6 +258,17 @@ export function Showcase() {
                 at + 0.3,
               );
           });
+
+          // Mounting card: the second pictogram turns over to show the same
+          // bracket hung upside down.
+          const MOUNT = TECH + 2.6;
+          tl.fromTo(q(".sc-mount"), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, MOUNT)
+            .fromTo(
+              q(".sc-mount-flip"),
+              { scaleY: 1, transformOrigin: "50% 50%" },
+              { scaleY: -1, duration: 0.6, ease: "power2.inOut" },
+              MOUNT + 0.35,
+            );
 
           tl.to({}, { duration: 0.8 }); // hold the exploded frame before release
         },
@@ -196,7 +280,7 @@ export function Showcase() {
   );
 
   return (
-    <section ref={root} id="clearer-view" className="relative h-[780vh]" aria-label="The C-1080 camera">
+    <section ref={root} id="clearer-view" className="relative h-[1250vh]" aria-label="The C-1080 camera">
       {/* One-cell grid: every full-stage layer shares the cell and stacks in
           DOM order, so only the offset/anchored pieces need `absolute`. */}
       <div className="sticky top-0 grid h-svh grid-cols-[100%] grid-rows-[100%] overflow-hidden">
@@ -234,15 +318,18 @@ export function Showcase() {
           </h2>
         </div>
 
-        {/* Phase 3 features — one at a time where the heading was, right-aligned */}
+        {/* Phase 3 features — one at a time where the heading was, right-aligned,
+            heading with its description underneath */}
         <div className={`${LAYER} pointer-events-none grid content-start justify-items-end px-4 pt-[14vh] md:px-[10vw] md:pt-[10vh]`}>
-          {FEATURES.map((title) => (
-            <h3
-              key={title}
-              className="sc-feature text-[clamp(2rem,6.2vw,7.5rem)] leading-[0.95] tracking-[-0.03em] invisible col-start-1 row-start-1 max-w-full text-right font-audiowide uppercase text-mist [perspective:900px]"
-            >
-              {title}
-            </h3>
+          {FEATURES.map(({ title, copy }) => (
+            <div key={title} className="sc-feature invisible col-start-1 row-start-1 flex max-w-full flex-col items-end text-right">
+              <h3 className="sc-feature-title text-[clamp(2rem,5.6vw,6.75rem)] leading-[0.95] tracking-[-0.03em] font-audiowide uppercase text-mist [perspective:900px]">
+                {title}
+              </h3>
+              <p className="sc-feature-copy mt-[clamp(1rem,3vh,2.5rem)] max-w-[24rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-white">
+                {copy}
+              </p>
+            </div>
           ))}
         </div>
 
@@ -279,6 +366,20 @@ export function Showcase() {
             </div>
           </div>
         ))}
+
+        {/* Section 4 · mounting flexibility: the same bracket, either way up */}
+        <div className={`sc-mount ${LAYER} invisible pointer-events-none z-20 mb-[9vh] mr-4 self-end justify-self-end md:mr-[5.73vw]`}>
+          <div className="rounded-xl border border-white/10 bg-ink/70 px-4 py-3 backdrop-blur-sm">
+            <p className="font-audiowide text-[clamp(0.8rem,0.95vw,1.1rem)] uppercase text-white">Mount it either way</p>
+            <div className="mt-2 flex gap-5">
+              <MountFigure label="Upright" />
+              <MountFigure label="Upside down" flip />
+            </div>
+            <p className="mt-2 font-archivo text-[clamp(0.7rem,0.75vw,0.875rem)] uppercase tracking-[0.18em] text-white/60">
+              No software changes
+            </p>
+          </div>
+        </div>
 
         {/* Scroll-progress HUD line for the exploded sequence */}
         <svg className={`sc-progress ${LAYER} pointer-events-none z-20 mb-[4vh] ml-[5.73vw] h-px w-[88.5vw] self-end justify-self-start overflow-visible`} preserveAspectRatio="none" viewBox="0 0 100 1">

@@ -12,7 +12,7 @@ import type { ShowcaseState } from "./state";
  * white strips for the long specular streaks on the housing, and a red rim
  * picking up the page's #ED1B26 glow from behind.
  */
-function StudioLights() {
+export function StudioLights() {
   return (
     <>
       <ambientLight intensity={0.25} />

@@ -12,6 +12,14 @@
 }
 
 @font-face {
+  font-family: "GoodTimes";
+  src: url("/assets/fonts/Good-Times-Rg.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: "Archivo";
   src: url("/assets/fonts/Archivo-Light.ttf") format("truetype");
   font-weight: 300;
@@ -38,7 +46,7 @@
   --maroon: #3e0e11;
   --slate: #4a4a4a;
 
-  --display-stack: "Audiowide", system-ui, sans-serif;
+  --display-stack: "GoodTimes", system-ui, sans-serif;
   --body-stack: "Archivo", "Helvetica Neue", Arial, sans-serif;
 }
 

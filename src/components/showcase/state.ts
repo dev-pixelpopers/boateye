@@ -12,6 +12,8 @@ export type ShowcaseState = {
   rotZ: number;
   /** Extra flip around X (radians) — a full turn reads as the same pose. */
   spinX: number;
+  /** Body pitch on the bracket hinge (radians, positive = lens up). */
+  tilt: number;
   /** 0 = assembled, 1 = fully exploded. */
   explode: number;
   /** DOM nodes that should track 3D anchors (exploded-view callouts). */
@@ -23,6 +25,7 @@ export function createShowcaseState(): ShowcaseState {
     ...INTRO.desktop,
     rotZ: 0,
     spinX: 0,
+    tilt: 0,
     explode: 0,
     anchors: new Map(),
   };
@@ -40,3 +43,6 @@ export const POSES = {
   body: { rotY: Math.PI * 2 - 1.05, rotX: 0.32 },
   exploded: { rotY: Math.PI * 2 - 0.85, rotX: 0.14 },
 } as const;
+
+/** How far the body pitches up on its bracket during the features (~15°). */
+export const TILT_UP = 0.26;

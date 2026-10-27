@@ -1,15 +1,22 @@
 "use client";
 
-import Image from "next/image";
-import { useRef } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useRef, useState } from "react";
 import { gsap, ScrollTrigger, SplitText, useGSAP, SCRUB } from "@/lib/gsap";
 import { useFontsReady } from "@/hooks/useFontsReady";
 import { PillButton } from "@/components/ui/PillButton";
 import { Logo } from "@/components/ui/Logo";
+import { TILT_UP } from "@/components/showcase/state";
+
+const HeroCamera = dynamic(() => import("./HeroCamera"), { ssr: false });
 
 export function Hero() {
   const root = useRef<HTMLElement>(null);
   const fontsReady = useFontsReady();
+  // Body tilt for the hero model, tweened by the intro below.
+  const cameraTilt = useRef({ value: 0 });
+  const [interacted, setInteracted] = useState(false);
+  const onInteract = useCallback(() => setInteracted(true), []);
 
   useGSAP(
     () => {
@@ -38,10 +45,14 @@ export function Hero() {
             filter: "blur(0px) brightness(1)",
             duration: 1,
             ease: "expo.inOut",
+            // The canvas overhangs this box so the model can turn freely.
+            clearProps: "clipPath,filter",
           },
           CAMERA_AT,
         )
         .from(q(".hero-camera-shadow"), { scaleX: 0, autoAlpha: 0, duration: 1 }, CAMERA_AT + 0.5)
+        // Once revealed, the body looks up on its bracket.
+        .fromTo(cameraTilt.current, { value: 0 }, { value: TILT_UP, duration: 1.4, ease: "power3.inOut" }, CAMERA_AT + 0.8)
         .from(
           lineA.chars,
           { yPercent: 115, rotateX: -80, transformOrigin: "50% 100%", duration: 1.2, stagger: 0.035 },
@@ -59,7 +70,8 @@ export function Hero() {
           { strokeDashoffset: 0, duration: 1.4, ease: "power3.inOut" },
           COPY_AT,
         )
-        .from(q(".hero-cta .pill-label"), { autoAlpha: 0, yPercent: 80, filter: "blur(4px)", duration: 1.1 }, COPY_AT + 0.2);
+        .from(q(".hero-cta .pill-label"), { autoAlpha: 0, yPercent: 80, filter: "blur(4px)", duration: 1.1 }, COPY_AT + 0.2)
+        .from(q(".hero-hint"), { autoAlpha: 0, y: 12, duration: 1 }, COPY_AT + 0.4);
 
       // ── Exit as the page moves on (scroll-scrubbed) ──────────────────────
       gsap
@@ -101,23 +113,30 @@ export function Hero() {
         </span>
       </h1>
 
-      {/* Product shot sits between "Night" and "Hides" — decorative overlay */}
+      {/* Interactive 3D model between "Night" and "Hides". Only the model's
+          canvas takes pointer input, so the rest of the hero scrolls as usual. */}
       <div className="hero-camera-wrap pointer-events-none absolute left-1/2 top-[clamp(9rem,14.9vw,18rem)] w-[clamp(11rem,25.9vw,31rem)] -translate-x-1/2">
         <div className="hero-camera relative aspect-[1400/1647] will-change-transform">
-          <Image
-            src="/assets/images/hero-camera.webp"
-            alt="BoatEye360 C-1080 night vision camera"
-            fill
-            fetchPriority="high"
-            loading="eager"
-            sizes="(min-width: 768px) 26vw, 50vw"
-            className="object-contain"
-          />
+          <div className="absolute -inset-x-[45%] -inset-y-[20%]">
+            <HeroCamera tilt={cameraTilt} onInteract={onInteract} />
+          </div>
         </div>
         <div
           aria-hidden
           className="hero-camera-shadow mx-auto -mt-[4%] h-[6%] w-[70%] rounded-[50%] bg-black/70 blur-xl"
         />
+        <div aria-hidden className="hero-hint mt-[clamp(0.75rem,1.4vw,1.5rem)] flex justify-center">
+          <span
+            className={`flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-ink/50 px-3.5 py-1.5 font-archivo text-[clamp(0.65rem,0.7vw,0.8rem)] uppercase tracking-[0.18em] text-white/70 backdrop-blur-sm transition-opacity duration-700 ${interacted ? "opacity-0" : ""}`}
+          >
+            <svg viewBox="0 0 24 24" className="size-[1.4em]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="12" cy="12" rx="10" ry="4" />
+              <path d="M17.5 5.2 20 8.3l-3.6.9" />
+            </svg>
+            <span className="pointer-coarse:hidden">Drag to rotate</span>
+            <span className="hidden pointer-coarse:inline">Swipe to rotate</span>
+          </span>
+        </div>
       </div>
 
       <div className="hero-bottom mt-auto flex flex-col items-start gap-8 pt-[clamp(10rem,30vw,4rem)] md:flex-row md:items-end md:justify-between">
