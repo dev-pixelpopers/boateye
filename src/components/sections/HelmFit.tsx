@@ -94,7 +94,7 @@ export function HelmFit() {
           <div className="helm-frame relative aspect-[1123/898] overflow-hidden">
             <div className="helm-img-wrap absolute -inset-y-[8%] inset-x-0">
               <Image
-                src="/assets/images/helm-installation.webp"
+                src="/assets/images/helm-installation.png"
                 alt="BoatEye360 camera mounted under a center-console hardtop"
                 fill
                 sizes="(min-width: 768px) 58vw, 100vw"

@@ -21,12 +21,12 @@ export default function Home() {
         <Showcase />
         <HelmFit />
         <Setup />
+        <ExternalMonitor />
         <Testimonials />
         <Engineering />
+        <Partners />
         <Gallery />
         <FinalCta />
-        <ExternalMonitor />
-        <Partners />
       </main>
       <Footer />
     </>
