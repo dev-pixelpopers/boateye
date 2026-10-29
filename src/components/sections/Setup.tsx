@@ -73,12 +73,12 @@ export function Setup() {
       <div className="sticky top-0 flex h-svh flex-col items-center justify-center gap-[clamp(2rem,5vh,5rem)] overflow-hidden px-4">
         <div
           aria-hidden
-          className="setup-glow glow-signal pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[min(150vw,2140px)] -translate-x-1/2 -translate-y-1/2"
+          className="setup-glow glow-shade pointer-events-none absolute left-1/2 top-1/2 -z-10 aspect-square w-[min(150vw,2140px)] -translate-x-1/2 -translate-y-1/2"
         />
         <h2
           id="setup-heading"
           aria-label="Straightforward setup"
-          className="setup-heading text-giant text-center font-audiowide uppercase text-white"
+          className="setup-heading text-giant text-center font-audiowide uppercase text-charcoal"
         >
           {/* Figma breaks the word deliberately to keep a two-line lockup */}
           Straightfor
@@ -87,7 +87,7 @@ export function Setup() {
         </h2>
 
         <div className="grid w-full max-w-[1100px] grid-cols-[auto_auto_1fr] items-center gap-[clamp(1rem,3vw,4rem)]">
-          <div className="h-[clamp(1.5rem,2.1vw,2.5rem)] overflow-hidden font-audiowide text-[clamp(1.4rem,2.08vw,2.5rem)] leading-[1] tracking-[-0.04em] text-white">
+          <div className="h-[clamp(1.5rem,2.1vw,2.5rem)] overflow-hidden font-audiowide text-[clamp(1.4rem,2.08vw,2.5rem)] leading-[1] tracking-[-0.04em] text-charcoal">
             <div className="setup-num-track flex flex-col">
               {STEPS.map((_, i) => (
                 <span key={i}>{`0${i + 1}`}</span>
@@ -105,7 +105,7 @@ export function Setup() {
             {STEPS.map((step) => (
               <p
                 key={step}
-                className="setup-step col-start-1 row-start-1 max-w-[507px] font-archivo text-[clamp(1.25rem,3.13vw,3.75rem)] leading-[1.17] text-white"
+                className="setup-step col-start-1 row-start-1 max-w-[507px] font-archivo text-[clamp(1.25rem,3.13vw,3.75rem)] leading-[1.17] text-charcoal"
               >
                 {step}
               </p>
@@ -114,7 +114,7 @@ export function Setup() {
         </div>
 
         <svg aria-hidden className="h-px w-full max-w-[1100px] overflow-visible" viewBox="0 0 100 1" preserveAspectRatio="none">
-          <line className="setup-rule" x1="0" y1="0.5" x2="100" y2="0.5" stroke="rgb(255 255 255 / .25)" pathLength={1} strokeDasharray="1" />
+          <line className="setup-rule" x1="0" y1="0.5" x2="100" y2="0.5" stroke="rgb(54 69 79 / .25)" pathLength={1} strokeDasharray="1" />
         </svg>
 
         <PillButton uppercase className="setup-cta">

@@ -52,7 +52,7 @@ export function Engineering() {
   return (
     <section
       ref={root}
-      className="relative bg-[linear-gradient(to_bottom,#fff_0,#fff_calc(100%-clamp(4rem,11.5vw,14rem)),transparent_calc(100%-clamp(4rem,11.5vw,14rem)))] px-4 text-black md:px-[5.73vw]"
+      className="relative bg-[linear-gradient(to_bottom,#fff_0,#fff_calc(100%-clamp(4rem,11.5vw,14rem)),transparent_calc(100%-clamp(4rem,11.5vw,14rem)))] px-4 text-charcoal md:px-[5.73vw]"
       aria-labelledby="eng-heading"
     >
       <div className="eng-text mx-auto flex max-w-[1230px] flex-col items-center gap-[clamp(1.5rem,2.6vw,3rem)] text-center">
@@ -62,7 +62,7 @@ export function Engineering() {
           Practical Engineering.
         </h2>
         <div className="flex max-w-[758px] flex-col gap-[clamp(0.75rem,1.1vw,1.25rem)]">
-          <h3 className="eng-eyebrow font-audiowide text-eyebrow uppercase text-maroon">Built Around Boaters</h3>
+          <h3 className="eng-eyebrow font-audiowide text-eyebrow uppercase text-charcoal">Built Around Boaters</h3>
           <p className="eng-copy font-archivo text-[clamp(1rem,1.3vw,1.5625rem)] leading-[1.42] text-slate">
             Purpose-built marine technology designed around real boating conditions, helping you
             navigate, explore, and enjoy the water with greater visibility and confidence after

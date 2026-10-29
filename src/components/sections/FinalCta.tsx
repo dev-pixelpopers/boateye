@@ -50,15 +50,15 @@ export function FinalCta() {
     >
       <div
         aria-hidden
-        className="cta-glow glow-signal pointer-events-none absolute left-1/2 top-[85%] -z-10 aspect-square w-[min(150vw,2140px)] -translate-x-1/2"
+        className="cta-glow glow-shade pointer-events-none absolute left-1/2 top-[85%] -z-10 aspect-square w-[min(150vw,2140px)] -translate-x-1/2"
       />
       <h2
         id="cta-heading"
-        className="cta-heading text-giant max-w-[1519px] font-audiowide uppercase text-white [perspective:600px]"
+        className="cta-heading text-giant max-w-[1519px] font-audiowide uppercase text-charcoal [perspective:600px]"
       >
         Make Every View Count.
       </h2>
-      <p className="cta-copy max-w-[902px] font-archivo text-[clamp(1.1rem,2.08vw,2.5rem)] leading-[1.42] text-white">
+      <p className="cta-copy max-w-[902px] font-archivo text-[clamp(1.1rem,2.08vw,2.5rem)] leading-[1.42] text-charcoal">
         Give your next trip a clearer perspective. Discover full-color night vision built for
         life on the water.
       </p>

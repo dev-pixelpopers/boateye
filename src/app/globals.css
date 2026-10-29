@@ -39,10 +39,14 @@
 
 
 :root {
+  /* Light theme from the updated Figma file (node 85:5). */
+  --canvas: #eceff5;
+  --charcoal: #36454f;
+  --crimson: #991b2a;
   --ink: #0b0a0b;
   --paper: #ffffff;
   --mist: #f0f0f0;
-  --signal: #ed1b26;
+  --signal: var(--crimson);
   --maroon: #3e0e11;
   --slate: #4a4a4a;
 
@@ -51,6 +55,9 @@
 }
 
 @theme inline {
+  --color-canvas: var(--canvas);
+  --color-charcoal: var(--charcoal);
+  --color-crimson: var(--crimson);
   --color-ink: var(--ink);
   --color-paper: var(--paper);
   --color-mist: var(--mist);
@@ -63,14 +70,14 @@
 }
 
 html {
-  background: var(--ink);
-  color-scheme: dark;
+  background: var(--canvas);
+  color-scheme: light;
   overflow-x: clip;
 }
 
 body {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--canvas);
+  color: var(--charcoal);
   font-family: var(--body-stack);
   font-weight: 300;
   overflow-x: clip;
@@ -123,19 +130,19 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Ambient red studio glows (the Figma ellipses are #ED1B26 @ 50%, blur 500)
+ * Ambient studio shading (the Figma ellipses are #36454F, blur 1000)
  * ------------------------------------------------------------------------- */
-@utility glow-signal {
+@utility glow-shade {
   background: radial-gradient(closest-side,
-      rgb(237 27 38 / 0.55),
-      rgb(237 27 38 / 0.2) 55%,
+      rgb(54 69 79 / 0.32),
+      rgb(54 69 79 / 0.12) 55%,
       transparent);
   filter: blur(40px);
 }
 
-/* Figma's red ellipses: #ED1B26 @ 50% with a 500px layer blur (at 1920). */
+/* Figma's charcoal ellipses: #36454F @ 50% with a 1000px layer blur (at 1920). */
 @utility glow-ellipse {
-  background: rgb(237 27 38 / 0.5);
+  background: rgb(54 69 79 / 0.5);
   filter: blur(min(26vw, 500px));
 }
 

@@ -96,14 +96,14 @@ export function Hero() {
         <Logo />
         <button
           type="button"
-          className="font-michroma text-[clamp(0.95rem,1.04vw,1.25rem)] leading-[0.94] text-white"
+          className="font-michroma text-[clamp(0.95rem,1.04vw,1.25rem)] leading-[0.94] text-charcoal"
         >
           Menu
         </button>
       </header>
 
       <h1
-        className="hero-title relative mt-[clamp(3rem,5.6vw,6.7rem)] flex flex-col items-center font-audiowide uppercase text-mist [perspective:800px]"
+        className="hero-title relative mt-[clamp(3rem,5.6vw,6.7rem)] flex flex-col items-center font-audiowide uppercase text-charcoal [perspective:800px]"
         aria-label="See what the night hides"
       >
         <span className="hero-line-a text-mega block whitespace-nowrap">See What the</span>
@@ -123,11 +123,11 @@ export function Hero() {
         </div>
         <div
           aria-hidden
-          className="hero-camera-shadow mx-auto -mt-[4%] h-[6%] w-[70%] rounded-[50%] bg-black/70 blur-xl"
+          className="hero-camera-shadow mx-auto -mt-[4%] h-[6%] w-[70%] rounded-[50%] bg-charcoal/45 blur-xl"
         />
         <div aria-hidden className="hero-hint mt-[clamp(0.75rem,1.4vw,1.5rem)] flex justify-center">
           <span
-            className={`flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-ink/50 px-3.5 py-1.5 font-archivo text-[clamp(0.65rem,0.7vw,0.8rem)] uppercase tracking-[0.18em] text-white/70 backdrop-blur-sm transition-opacity duration-700 ${interacted ? "opacity-0" : ""}`}
+            className={`flex items-center gap-2 whitespace-nowrap rounded-full border border-charcoal/15 bg-canvas/60 px-3.5 py-1.5 font-archivo text-[clamp(0.65rem,0.7vw,0.8rem)] uppercase tracking-[0.18em] text-charcoal/70 backdrop-blur-sm transition-opacity duration-700 ${interacted ? "opacity-0" : ""}`}
           >
             <svg viewBox="0 0 24 24" className="size-[1.4em]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <ellipse cx="12" cy="12" rx="10" ry="4" />
@@ -140,7 +140,7 @@ export function Hero() {
       </div>
 
       <div className="hero-bottom mt-auto flex flex-col items-start gap-8 pt-[clamp(10rem,30vw,4rem)] md:flex-row md:items-end md:justify-between">
-        <p className="hero-copy max-w-[22.8rem] font-archivo text-[clamp(0.95rem,0.94vw,1.125rem)] leading-[1.42] text-white">
+        <p className="hero-copy max-w-[22.8rem] font-archivo text-[clamp(0.95rem,0.94vw,1.125rem)] leading-[1.42] text-charcoal">
           Navigate with greater awareness after dark. BoatEye360 brings full-color night vision
           to your helm, helping you see what lies ahead when visibility fades.
         </p>

@@ -68,7 +68,7 @@ export function HelmFit() {
     <section
       ref={root}
       id="helm"
-      className="relative z-10 bg-white py-[clamp(4rem,8.4vw,10rem)] text-black"
+      className="relative z-10 bg-charcoal py-[clamp(4rem,8.4vw,10rem)] text-white"
       aria-labelledby="helm-heading"
     >
       <div className="grid gap-12 md:grid-cols-[minmax(0,709fr)_minmax(0,1123fr)] md:gap-[4.6vw]">

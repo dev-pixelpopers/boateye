@@ -18,7 +18,7 @@ const TURN = Math.PI * 2;
  * pivots on the bracket bolts: lens-down stops ~8 units above the base plate,
  * lens-up before the back of the body drops below the mounting face.
  */
-const TILT_RANGE: [number, number] = [-0.3, 0.6];
+const TILT_RANGE: [number, number] = [-0.3, 0.5];
 /** Seconds after letting go before the model eases back to the front. */
 const SETTLE_AFTER = 1.6;
 

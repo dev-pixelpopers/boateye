@@ -82,7 +82,7 @@ function MountFigure({ label, flip = false }: { label: string; flip?: boolean })
           {/* Housing with the lens face and its view */}
           <rect x="20" y="34" width="72" height="30" rx="6" className="fill-white/10 stroke-white" strokeWidth="1.5" />
           <rect x="92" y="36" width="7" height="26" rx="2" className="fill-signal" />
-          <circle cx="61" cy="50" r="3" className="fill-ink stroke-white" />
+          <circle cx="61" cy="50" r="3" className="fill-charcoal stroke-white" />
           <path d="M101 49l15-8M101 49l15 8" className="stroke-white/40" strokeDasharray="2 3" />
         </g>
       </svg>
@@ -284,7 +284,7 @@ export function Showcase() {
       {/* One-cell grid: every full-stage layer shares the cell and stacks in
           DOM order, so only the offset/anchored pieces need `absolute`. */}
       <div className="sticky top-0 grid h-svh grid-cols-[100%] grid-rows-[100%] overflow-hidden">
-        {/* Figma ellipse 109:82 — red glow rising from the lower right */}
+        {/* Figma ellipse 109:82 — charcoal shade rising from the lower right */}
         <div
           aria-hidden
           className="sc-glow glow-ellipse pointer-events-none absolute -z-10 aspect-[1/2] w-[55.73vw] rounded-l-full"
@@ -293,12 +293,12 @@ export function Showcase() {
 
         {/* Phase 1 heading, copy and CTA — behind the model */}
         <div className={`${LAYER} pointer-events-none flex flex-col items-start px-4 pt-[14vh] md:px-[10vw] md:pt-[10vh]`}>
-          <h2 className="sc-intro-title text-giant text-left font-audiowide uppercase text-mist">
+          <h2 className="sc-intro-title text-giant text-left font-audiowide uppercase text-charcoal">
             <span className="block whitespace-nowrap">A Clearer</span>
             <span className="block whitespace-nowrap">View After</span>
             <span className="block whitespace-nowrap">Dark.</span>
           </h2>
-          <p className="sc-intro-copy mt-[clamp(1.5rem,4vh,3.5rem)] max-w-[22rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-white">
+          <p className="sc-intro-copy mt-[clamp(1.5rem,4vh,3.5rem)] max-w-[22rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-charcoal">
             Full-color marine night vision, engineered for real-world boating. See more detail in
             low light with a camera built for demanding marine environments.
           </p>
@@ -311,7 +311,7 @@ export function Showcase() {
 
         {/* Section 4 heading */}
         <div className={`${LAYER} pointer-events-none flex items-start justify-center px-4 pt-[6vh]`}>
-          <h2 className="sc-tech sc-tech-title text-giant origin-top text-center font-audiowide uppercase text-white">
+          <h2 className="sc-tech sc-tech-title text-giant origin-top text-center font-audiowide uppercase text-charcoal">
             Technology
             <br />
             Behind the C-1080
@@ -323,10 +323,10 @@ export function Showcase() {
         <div className={`${LAYER} pointer-events-none grid content-start justify-items-end px-4 pt-[14vh] md:px-[10vw] md:pt-[10vh]`}>
           {FEATURES.map(({ title, copy }) => (
             <div key={title} className="sc-feature invisible col-start-1 row-start-1 flex max-w-full flex-col items-end text-right">
-              <h3 className="sc-feature-title text-[clamp(2rem,5.6vw,6.75rem)] leading-[0.95] tracking-[-0.03em] font-audiowide uppercase text-mist [perspective:900px]">
+              <h3 className="sc-feature-title text-[clamp(2rem,5.6vw,6.75rem)] leading-[0.95] tracking-[-0.03em] font-audiowide uppercase text-charcoal [perspective:900px]">
                 {title}
               </h3>
-              <p className="sc-feature-copy mt-[clamp(1rem,3vh,2.5rem)] max-w-[24rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-white">
+              <p className="sc-feature-copy mt-[clamp(1rem,3vh,2.5rem)] max-w-[24rem] font-archivo text-[clamp(0.9rem,0.94vw,1.125rem)] leading-[1.42] text-charcoal">
                 {copy}
               </p>
             </div>
@@ -344,19 +344,19 @@ export function Showcase() {
             ref={anchor(c.key)}
             className="sc-callout pointer-events-none absolute left-0 top-0 z-20 hidden will-change-transform md:block"
           >
-            <span className="sc-callout-dot absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal shadow-[0_0_12px_#ed1b26]" />
+            <span className="sc-callout-dot absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal shadow-[0_0_12px_var(--crimson)]" />
             <svg className="absolute left-0 top-0 overflow-visible" width="1" height="1">
               <path
                 className="sc-line"
                 d={`M0 0 L${c.dx} ${c.dy} L${c.dx + c.hx} ${c.dy}`}
                 fill="none"
-                stroke="rgb(255 255 255 / .8)"
+                stroke="rgb(54 69 79 / .8)"
                 strokeWidth="1"
                 pathLength={1}
               />
             </svg>
             <div
-              className={`sc-callout-label absolute w-max rounded-md bg-ink/70 px-3 py-2 backdrop-blur-sm ${c.hx < 0 ? "-translate-x-full text-right" : ""} -translate-y-1/2`}
+              className={`sc-callout-label absolute w-max rounded-md bg-charcoal/85 px-3 py-2 backdrop-blur-sm ${c.hx < 0 ? "-translate-x-full text-right" : ""} -translate-y-1/2`}
               style={{ left: c.dx + c.hx, top: c.dy }}
             >
               <p className="font-audiowide text-[clamp(0.8rem,0.95vw,1.1rem)] uppercase text-white">{c.title}</p>
@@ -369,7 +369,7 @@ export function Showcase() {
 
         {/* Section 4 · mounting flexibility: the same bracket, either way up */}
         <div className={`sc-mount ${LAYER} invisible pointer-events-none z-20 mb-[9vh] mr-4 self-end justify-self-end md:mr-[5.73vw]`}>
-          <div className="rounded-xl border border-white/10 bg-ink/70 px-4 py-3 backdrop-blur-sm">
+          <div className="rounded-xl border border-white/10 bg-charcoal/85 px-4 py-3 backdrop-blur-sm">
             <p className="font-audiowide text-[clamp(0.8rem,0.95vw,1.1rem)] uppercase text-white">Mount it either way</p>
             <div className="mt-2 flex gap-5">
               <MountFigure label="Upright" />
@@ -383,8 +383,8 @@ export function Showcase() {
 
         {/* Scroll-progress HUD line for the exploded sequence */}
         <svg className={`sc-progress ${LAYER} pointer-events-none z-20 mb-[4vh] ml-[5.73vw] h-px w-[88.5vw] self-end justify-self-start overflow-visible`} preserveAspectRatio="none" viewBox="0 0 100 1">
-          <line x1="0" y1="0.5" x2="100" y2="0.5" stroke="rgb(255 255 255 / .12)" vectorEffect="non-scaling-stroke" />
-          <line className="sc-line" x1="0" y1="0.5" x2="100" y2="0.5" stroke="#ed1b26" pathLength={1} />
+          <line x1="0" y1="0.5" x2="100" y2="0.5" stroke="rgb(54 69 79 / .15)" vectorEffect="non-scaling-stroke" />
+          <line className="sc-line" x1="0" y1="0.5" x2="100" y2="0.5" stroke="var(--crimson)" pathLength={1} />
         </svg>
       </div>
     </section>

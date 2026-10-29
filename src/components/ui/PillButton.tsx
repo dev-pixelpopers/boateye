@@ -11,7 +11,9 @@ type PillButtonProps = {
 };
 
 /**
- * Outline pill CTA from the Figma file. The border is an SVG rect normalised
+ * Filled crimson pill CTA from the Figma file. `tone` names the surface the
+ * pill sits on: "light" pages get a crimson keyline, "dark" panels a white one.
+ * The border is an SVG rect normalised
  * with pathLength=1 so any parent timeline can "draw" it by tweening
  * `.pill-stroke` strokeDashoffset from 1 → 0.
  */
@@ -33,12 +35,9 @@ export function PillButton({
     return () => ro.disconnect();
   }, []);
 
-  const stroke = tone === "light" ? "#ffffff" : "#000000";
-  const text =
-    tone === "light"
-      ? "text-white hover:text-ink"
-      : "text-black hover:text-white";
-  const fill = tone === "light" ? "bg-white" : "bg-black";
+  const stroke = tone === "light" ? "var(--crimson)" : "#ffffff";
+  const text = tone === "light" ? "text-white" : "text-white hover:text-charcoal";
+  const fill = tone === "light" ? "bg-charcoal" : "bg-white";
 
   return (
     <a
@@ -46,10 +45,19 @@ export function PillButton({
       href={href}
       className={`pill group relative inline-flex items-center justify-center overflow-hidden rounded-full px-[clamp(1.25rem,1.93vw,2.3rem)] py-[clamp(0.8rem,1vw,1.2rem)] font-audiowide text-[clamp(0.9rem,1.25vw,1.5rem)] leading-[0.94] whitespace-nowrap transition-colors duration-500 ${text} ${uppercase ? "uppercase" : ""} ${className}`}
     >
-      <span
-        aria-hidden
-        className={`absolute inset-0 origin-bottom scale-y-0 rounded-full transition-transform duration-500 ease-[cubic-bezier(.7,0,.2,1)] group-hover:scale-y-100 ${fill}`}
-      />
+      {/* Invisible copy sizes the pill; the visible label layer is absolute. */}
+      <span aria-hidden className="invisible">
+        {children}
+      </span>
+      {/* The crimson fill lives on `.pill-label`, so timelines that reveal the
+          label bring the fill in with the text instead of an empty pill. */}
+      <span className="pill-label absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-crimson">
+        <span
+          aria-hidden
+          className={`absolute inset-0 origin-bottom scale-y-0 rounded-full transition-transform duration-500 ease-[cubic-bezier(.7,0,.2,1)] group-hover:scale-y-100 ${fill}`}
+        />
+        <span className="relative">{children}</span>
+      </span>
       <svg
         aria-hidden
         className="pointer-events-none absolute inset-0 size-full overflow-visible"
@@ -69,7 +77,6 @@ export function PillButton({
           style={{ width: "calc(100% - 1px)", height: "calc(100% - 1px)" }}
         />
       </svg>
-      <span className="pill-label relative">{children}</span>
     </a>
   );
 }

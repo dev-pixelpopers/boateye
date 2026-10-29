@@ -76,7 +76,7 @@ export function Testimonials() {
     <section ref={root} className="relative overflow-hidden pt-[clamp(4rem,6vw,8rem)]" aria-labelledby="tst-heading">
       <h2
         id="tst-heading"
-        className="tst-heading text-giant text-center font-audiowide uppercase text-white"
+        className="tst-heading text-giant text-center font-audiowide uppercase text-charcoal"
       >
         Shared
         <br />
